@@ -49,3 +49,25 @@ export interface DictionaryItem {
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   tags: string[];
 }
+
+export interface BoundingBox {
+  x: number; // 0..1 normalized
+  y: number; // 0..1 normalized
+  width: number; // 0..1 normalized
+  height: number; // 0..1 normalized
+}
+
+export interface TrackedPerson {
+  id: string;
+  label: string;
+  box: BoundingBox;
+  isMain: boolean;
+  isSigning?: boolean;
+  description?: string;
+  confidence?: number;
+  lastSeen?: number;
+}
+
+export type TrackingMode = 'auto' | 'manual' | 'group' | 'off';
+export type FramingTightness = 'tight' | 'balanced' | 'wide';
+

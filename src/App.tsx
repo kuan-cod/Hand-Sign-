@@ -302,7 +302,7 @@ export default function App() {
           <div className="flex items-center space-x-2.5">
             <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
-              Supports <strong className="text-white">ASL Alphabet</strong> (A-Z), <strong className="text-white">Numbers</strong> (0-9), <strong className="text-white">Common Phrases</strong> (Hello, Thank you, Please, Yes, No, I Love You, Water), and <strong className="text-white">Universal Gestures</strong> (Thumbs Up, Peace, OK, Rock On, Wave).
+              <strong className="text-white">Smart Person Tracking Active:</strong> Camera smoothly tracks the main person/signer in the room. Supports <strong className="text-white">ASL Alphabet</strong> (A-Z), <strong className="text-white">Numbers</strong> (0-9), <strong className="text-white">Phrases & Signs</strong>, and <strong className="text-white">Universal Gestures</strong>.
             </span>
           </div>
           <button
@@ -325,6 +325,7 @@ export default function App() {
                 setAutoTranslate={setAutoTranslate}
                 autoInterval={autoInterval}
                 setAutoInterval={setAutoInterval}
+                onSwitchToUpload={() => setActiveTab('upload')}
               />
             )}
 
@@ -339,6 +340,7 @@ export default function App() {
                   autoInterval={2}
                   setAutoInterval={() => {}}
                   handInFrameGuidance="Match your hand to the target sign below"
+                  onSwitchToUpload={() => setActiveTab('upload')}
                 />
 
                 <PracticeMode

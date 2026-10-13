@@ -291,6 +291,91 @@ Example:
     }
   });
 
+  // Detect people in the room with Gemini AI
+  app.post("/api/detect-people", async (req, res) => {
+    try {
+      const { image } = req.body;
+      if (!image) {
+        res.status(400).json({ error: "Image is required" });
+        return;
+      }
+
+      const cleanBase64 = image.replace(/^data:image\/[a-z]+;base64,/, "");
+      const ai = getGeminiClient();
+
+      const prompt = `
+Analyze this camera view of a room.
+Identify all visible people in the frame.
+For each person:
+1. Provide a bounding box covering their upper body, face, and signing space (waist to head, shoulders to arms) as normalized fractions between 0.0 and 1.0 (x = left coordinate 0..1, y = top coordinate 0..1, width = 0..1, height = 0..1).
+2. Determine who is the "main" person in the room (e.g. closest to camera, speaking/signing, or most prominent).
+3. Check if they appear to be signing, gesturing, or raising hands (isSigning: boolean).
+4. Assign an informative label like "Main Signer", "Person 1 (Foreground)", "Person 2 (Background)".
+`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.8-flash",
+        contents: {
+          parts: [
+            {
+              inlineData: {
+                mimeType: "image/jpeg",
+                data: cleanBase64,
+              },
+            },
+            { text: prompt },
+          ],
+        },
+        config: {
+          systemInstruction:
+            "You are an expert multi-person room tracker and auto-framing computer vision assistant. Identify all people and their normalized bounding boxes.",
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              people: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.STRING },
+                    label: { type: Type.STRING },
+                    box: {
+                      type: Type.OBJECT,
+                      properties: {
+                        x: { type: Type.NUMBER, description: "Left fraction 0 to 1" },
+                        y: { type: Type.NUMBER, description: "Top fraction 0 to 1" },
+                        width: { type: Type.NUMBER, description: "Width fraction 0 to 1" },
+                        height: { type: Type.NUMBER, description: "Height fraction 0 to 1" },
+                      },
+                      required: ["x", "y", "width", "height"],
+                    },
+                    isMain: { type: Type.BOOLEAN },
+                    isSigning: { type: Type.BOOLEAN },
+                    description: { type: Type.STRING },
+                  },
+                  required: ["id", "label", "box", "isMain"],
+                },
+              },
+              summary: { type: Type.STRING },
+              roomDensity: { type: Type.STRING },
+            },
+            required: ["people", "summary"],
+          },
+        },
+      });
+
+      const parsed = JSON.parse(response.text || "{}");
+      res.json(parsed);
+    } catch (error: any) {
+      console.error("Error in detect-people:", error);
+      res.status(500).json({
+        people: [],
+        summary: "Could not scan people in room",
+      });
+    }
+  });
+
   // Vite middleware for development vs static build in production
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

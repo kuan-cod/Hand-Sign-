@@ -34,11 +34,13 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({
 
   const [isChecking, setIsChecking] = useState(false);
   const [practiceResult, setPracticeResult] = useState<PracticeResult | null>(null);
+  const [frameError, setFrameError] = useState<string | null>(null);
 
   const handleCheckSign = async () => {
+    setFrameError(null);
     const frame = onCaptureFrame();
     if (!frame) {
-      alert('Could not capture camera frame. Please ensure camera is active.');
+      setFrameError('Could not capture camera frame. Ensure camera or demo stream is running.');
       return;
     }
 
@@ -60,7 +62,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({
       const data: PracticeResult = await res.json();
       setPracticeResult(data);
     } catch (err) {
-      console.error('Error in practice check:', err);
+      console.warn('Practice check error:', err);
+      setFrameError('Analysis error. Please retry framing your hand clearly.');
     } finally {
       setIsChecking(false);
     }
@@ -131,6 +134,14 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({
           <span>{selectedItem.instructions}</span>
         </div>
       </div>
+
+      {/* Error notice if frame capture failed */}
+      {frameError && (
+        <div className="p-2.5 bg-red-500/10 border border-red-500/30 rounded-xl text-xs text-red-300 flex items-center space-x-2">
+          <HelpCircle className="w-4 h-4 text-red-400 shrink-0" />
+          <span>{frameError}</span>
+        </div>
+      )}
 
       {/* Action Check button */}
       <div className="flex items-center justify-between pt-1">
