@@ -1,0 +1,6 @@
+{
+  "name": "Hand Sign & Gesture Translator",
+  "description": "Real-time AI translator for hand signs, ASL gestures, and body signals into words, sentences, and speech.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
